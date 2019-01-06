@@ -1,0 +1,4 @@
+# Don't track content of these folders
+__pycache__/
+.DS_Store
+.gitignore.swp
