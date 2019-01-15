@@ -43,7 +43,6 @@ def get_pbp(game_id):
     """
     game_id = str(game_id)
     url = 'http://www.nhl.com/scores/htmlreports/{}{}/PL{}.HTM'.format(game_id[:4], int(game_id[:4]) + 1, game_id[4:])
-
     page_info = {
         "url": url,
         "name": game_id,
@@ -842,5 +841,4 @@ def scrape_game(game_id, players, teams):
     return scrape_pbp(game_html, game_id, players, teams)
 
 
-
-
+# end

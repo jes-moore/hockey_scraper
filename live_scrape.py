@@ -17,9 +17,9 @@ import hockey_scraper.shared as shared
 def set_docs_dir(user_dir):
     """
     Set the docs directory
-    
+
     :param user_dir: User specified directory for storing saves scraped files
-    
+
     :return: None
     """
     # We always want to rescrape since the files are being updated constantly
@@ -44,9 +44,9 @@ def check_date_format(date):
 
 
 class LiveGame:
-    """ 
+    """
     This is a class holds all the information for a given game
-      
+
     :param int game_id: The NHL game id (ex: 2018020001)
     :param datetime start_time: The UTC time of when the game begins
     :param str home_team: Tricode for the home team (ex: NYR)
@@ -101,9 +101,9 @@ class LiveGame:
     def scrape(self, force=False):
         """
         Scrape the given game. Check if currently ongoing or started
-        
+
         :param bool force: Whether or not to force it to scrape even if it's over
-        
+
         :return: None
         """
         # 1. force = False: If the game hasn't eclipsed the starting time or is over we don't scrape
@@ -114,9 +114,9 @@ class LiveGame:
     def scrape_live_game(self, force=False):
         """
         Scrape the live info for a given game
-        
+
         :param force: Whether to scrape no matter what (used for intermission here)
-        
+
         :return: None
         """
         game_json = json_pbp.get_pbp(str(self.game_id))
@@ -180,14 +180,14 @@ class LiveGame:
 
     def is_ongoing(self):
         """
-        Check if the game is currently being played. 
-        
-        The logic here is that we run into an issue with intermission and the end of game. If the game is just changed 
+        Check if the game is currently being played.
+
+        The logic here is that we run into an issue with intermission and the end of game. If the game is just changed
         to Final or Intermission the end user will assume the game isn't ongoing and will not update with the most
-        recent events. They'll be delayed for intermission and won't place it at all for Final games. So we use the 
-        previous event as a guide. If it's currently in intermission or Final - we check the previous status. If it's 
+        recent events. They'll be delayed for intermission and won't place it at all for Final games. So we use the
+        previous event as a guide. If it's currently in intermission or Final - we check the previous status. If it's
         the same the user already has the data. Otherwise we 'lie' and say the game is still ongoing.
-        
+
         :return: Boolean
         """
         # The game is currently being played
@@ -206,7 +206,7 @@ class LiveGame:
         """
         Return the seconds until the game starts
 
-        :return: seconds until game 
+        :return: seconds until game
         """
         delta = self.start_time - datetime.datetime.utcnow()
         if delta.days >= 0:
@@ -217,9 +217,9 @@ class LiveGame:
     def is_game_over(self, prev=False):
         """
         Check if the game is over for both the html and json pbp. If prev=True check for the previous event
-        
+
         :param prev: Check the game status for the previous event
-        
+
         :return: Boolean - True if over
         """
         if not prev:
@@ -230,7 +230,7 @@ class LiveGame:
     def is_intermission(self, prev=False):
         """
         Check if in intermission for both the html and json pbp. If prev=True check for the previous event
-        
+
         :param prev: Check the game status for the previous event
 
         :return: Boolean - True if yes
@@ -243,7 +243,7 @@ class LiveGame:
     def get_pbp(self):
         """
         Return the pbp ensure it's not None
-        
+
         :return: DataFrame
         """
         if isinstance(self.pbp_df, pd.DataFrame):
@@ -266,19 +266,19 @@ class LiveGame:
 class ScrapeLiveGames:
     """
     Class than contains the info for all the games on a specific day
-    
+
     :param str date: Date of games (ex: 2018-10-30)
     :param bool preseason: If you want to scrape preseason games
     :param bool if_scrape_shifts: Whether or not you want to scrape shifts
-    :param list live_games: List of LiveGame objects for 
+    :param list live_games: List of LiveGame objects for
     :param int pause: Amount to pause after each scraping call
     """
 
     def __init__(self, date, preseason=False, if_scrape_shifts=False, pause=15, game_ids=list()):
         """
         Initialize the ScrapeLiveGames object with games for the day
-        
-        :param date: Date 
+
+        :param date: Date
         :param preseason: If scrape preseason
         :param if_scrape_shifts: Whether to scrape the shifts
         :param pause: time to pause
@@ -297,7 +297,7 @@ class ScrapeLiveGames:
     def get_games(self):
         """
         Get initial game info -> Called with object creation. Includes: players, espn_ids, standard game info
-        
+
         :return: Dict - LiveGame objects for all games today
         """
         game_objs = []
@@ -341,10 +341,10 @@ class ScrapeLiveGames:
     def update_live_games(self, force=False, sleep_next=False):
         """
         Scrape the pbp & shifts of ongoing games
-        
+
         :param bool force: Whether or not to force it to scrape even if it's in intermission
         :param bool sleep_next: Sleep until the next game starts
-        
+
         :return: None
         """
         # Check if we need to sleep
@@ -359,7 +359,7 @@ class ScrapeLiveGames:
     def sleep_next_game(self):
         """
         Sleep until the next game starts. Otherwise just looping and doing nothing
-        
+
         :return: None
         """
         # Get rid of final games...we are looking at current or upcoming games
@@ -380,7 +380,7 @@ class ScrapeLiveGames:
     def finished(self):
         """
         Check if done with all games
-        
+
         :return: Boolean
         """
         # Count finished games

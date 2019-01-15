@@ -11,10 +11,10 @@ import hockey_scraper.shared as shared
 
 def event_type(play_description):
     """
-    Returns the event type (ex: a SHOT or a GOAL...etc) given the event description 
-    
+    Returns the event type (ex: a SHOT or a GOAL...etc) given the event description
+
     :param play_description: description of play
-    
+
     :return: event
     """
     events = {'GOAL SCORED': 'GOAL', 'SHOT ON GOAL': 'SHOT', 'SHOT MISSED': 'MISS', 'SHOT BLOCKED': 'BLOCK',
@@ -27,9 +27,9 @@ def event_type(play_description):
 def get_game_ids(response):
     """
     Get game_ids for date from doc
-    
+
     :param response: doc
-    
+
     :return: list of game_ids
     """
     soup = BeautifulSoup(response, 'lxml')
@@ -44,10 +44,10 @@ def get_game_ids(response):
 def get_teams(response):
     """
     Extract Teams for date from doc
-    
+
     :param response: doc
-    
-    :return: list of teams    
+
+    :return: list of teams
     """
     soup = BeautifulSoup(response, 'lxml')
 
@@ -63,10 +63,10 @@ def get_teams(response):
 def get_espn_date(date):
     """
     Get the page that contains all the games for that day
-    
+
     :param date: YYYY-MM-DD
-    
-    :return: response 
+
+    :return: response
     """
     page_info = {
         "url": 'http://www.espn.com/nhl/scoreboard?date={}'.format(date.replace('-', '')),
@@ -87,11 +87,11 @@ def get_espn_game_id(date, home_team, away_team):
     """
     Scrapes the day's schedule and gets the id for the given game
     Ex: http://www.espn.com/nhl/scoreboard?date=20161024
-    
+
     :param date: format-> YearMonthDay-> 20161024
     :param home_team: home team
     :param away_team: away team
-    
+
     :return: 9 digit game id as a string
     """
     response = get_espn_date(date)
@@ -106,14 +106,14 @@ def get_espn_game_id(date, home_team, away_team):
 
 def get_espn_game(date, home_team, away_team, game_id=None):
     """
-    Gets the ESPN pbp feed 
+    Gets the ESPN pbp feed
     Ex: http://www.espn.com/nhl/gamecast/data/masterFeed?lang=en&isAll=true&gameId=400885300
-    
+
     :param date: date of the game
     :param home_team: home team
     :param away_team: away team
     :param game_id: Game id of we already have it - for live scraping. None if not there
-    
+
     :return: raw xml
     """
     # Get if not provided
@@ -136,11 +136,11 @@ def get_espn_game(date, home_team, away_team, game_id=None):
 
 def parse_event(event):
     """
-    Parse each event. In the string each field is separated by a '~'. 
+    Parse each event. In the string each field is separated by a '~'.
     Relevant for here: The first two are the x and y coordinates. And the 4th and 5th are the time elapsed and period.
-    
+
     :param event: string with info
-    
+
     :return: return dict with relevant info
     """
     info = dict()
@@ -161,10 +161,10 @@ def parse_event(event):
 
 def parse_espn(espn_xml):
     """
-    Parse feed 
-    
+    Parse feed
+
     :param espn_xml: raw xml of feed
-    
+
     :return: DataFrame with info
     """
     columns = ['period', 'time_elapsed', 'event', 'xC', 'yC']
@@ -189,13 +189,13 @@ def parse_espn(espn_xml):
 def scrape_game(date, home_team, away_team, game_id=None):
     """
     Scrape the game
-    
+
     :param date: ex: 2016-20-24
     :param home_team: tricode
     :param away_team: tricode
     :param game_id: Only provided for live games.
-    
-    :return: DataFrame with info 
+
+    :return: DataFrame with info
     """
     try:
         shared.print_warning('Using espn for pbp')

@@ -12,10 +12,10 @@ def get_schedule(date_from, date_to):
     """
     Scrapes games in date range
     Ex: https://statsapi.web.nhl.com/api/v1/schedule?startDate=2010-10-03&endDate=2011-06-20
-    
+
     :param date_from: scrape from this date
     :param date_to: scrape until this date
-    
+
     :return: raw json of schedule of date range
     """
     page_info = {
@@ -31,7 +31,7 @@ def get_schedule(date_from, date_to):
 def get_current_season():
     """
     Get Season based on today's date
-    
+
     :return: season -> ex: 2016 for 2016-2017 season
     """
     year = str(datetime.date.today().year)
@@ -52,9 +52,9 @@ def get_current_season():
 def get_dates(games):
     """
     Given a list game_ids it returns the dates for each game
-    
+
     :param games: list with game_id's ex: 2016020001
-    
+
     :return: list with game_id and corresponding date for all games
     """
     games.sort()
@@ -84,13 +84,13 @@ def get_dates(games):
 def scrape_schedule(date_from, date_to, preseason=False, live=False):
     """
     Calls getSchedule and scrapes the raw schedule Json
-    
+
     :param date_from: scrape from this date
     :param date_to: scrape until this date
     :param preseason: Boolean indicating whether include preseason games (default if False)
-    :param live: Boolean indicating whether we are scraping live games. Means we relax the requirement of checking if 
-                 the game is over. 
-    
+    :param live: Boolean indicating whether we are scraping live games. Means we relax the requirement of checking if
+                 the game is over.
+
     :return: list with all the game id's
     """
     schedule = []
@@ -102,10 +102,12 @@ def scrape_schedule(date_from, date_to, preseason=False, live=False):
                 game_id = int(str(game['gamePk'])[5:])
                 if (game_id >= 20000 or preseason) and game_id < 40000:
                     game_time = datetime.datetime.strptime(game['gameDate'][:-1], "%Y-%m-%dT%H:%M:%S")
-                    schedule.append({"game_id": game['gamePk'], "date": day['date'], "start_time": game_time,
-                                     "home_team": shared.get_team(game['teams']['home']['team']['name'].upper()),
-                                     "away_team": shared.get_team(game['teams']['away']['team']['name'].upper()),
-                                     "status": game["status"]["abstractGameState"]
-                                     })
+                    schedule.append({
+                        "game_id": game['gamePk'],'game_type':game['gameType'],
+                        "date": day['date'], "start_time": game_time,
+                        "home_team": shared.get_team(game['teams']['home']['team']['name'].upper()),
+                        "away_team": shared.get_team(game['teams']['away']['team']['name'].upper()),
+                        "status": game["status"]["abstractGameState"]
+                        })
 
     return schedule

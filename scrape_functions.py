@@ -96,7 +96,7 @@ def check_valid_dates(from_date, to_date):
                                    "(ex: '2016-10-01').")
 
 
-def to_csv(file_name, pbp_df, shifts_df):
+def to_csv(file_name, pbp_df, shifts_df, out_loc):
     """
     Write DataFrame(s) to csv file(s)
 
@@ -106,12 +106,76 @@ def to_csv(file_name, pbp_df, shifts_df):
 
     :return: None
     """
+
+    # Rename
+    event_types = {
+        'PSTR': 'Period_Start',
+        'FAC': 'Faceoff',
+        'STOP': 'Stoppage',
+        'TAKE': 'Takeaway',
+        'BLOCK': 'Blocked Shot',
+        'SHOT': 'Shot',
+        'MISS': 'Missed Shot',
+        'HIT': 'Hit',
+        'GIVE': 'Giveaway',
+        'GOAL': 'Goal',
+        'PENL': 'Penalty',
+        'PEND': 'Period End',
+        'GEND': 'Game End'
+    }
+
+    output_cols = [
+        'game_id', 'date', 'play_num', 'period', 'event', 'description', 'periodTimeM',
+        'periodTime', 'strength', 'ev_zone', 'type', 'ev_team', 'home_zone',
+        'away_team', 'home_team', 'p1_name', 'p1_id', 'p2_name', 'p2_id',
+        'p3_name', 'p3_id', 'awayPlayer1', 'awayPlayer1_id', 'awayPlayer2',
+        'awayPlayer2_id', 'awayPlayer3', 'awayPlayer3_id', 'awayPlayer4',
+        'awayPlayer4_id', 'awayPlayer5', 'awayPlayer5_id', 'awayPlayer6',
+        'awayPlayer6_id', 'homePlayer1', 'homePlayer1_id', 'homePlayer2',
+        'homePlayer2_id', 'homePlayer3', 'homePlayer3_id', 'homePlayer4',
+        'homePlayer4_id', 'homePlayer5', 'homePlayer5_id', 'homePlayer6',
+        'homePlayer6_id',  'away_players', 'home_players', 'away_score',
+        'home_score', 'away_goalie', 'away_goalie_id', 'home_goalie',
+        'home_goalie_id', 'x', 'y', 'home_coach', 'away_coach', 'game_type']
+
     if pbp_df is not None:
-        print("\nPbp data deposited in file - " + 'nhl_pbp{}.csv'.format(file_name))
-        pbp_df.to_csv('nhl_pbp{}.csv'.format(file_name), sep=',', encoding='utf-8')
+        # Rename Columns and Event Types
+        pbp_df.columns = output_cols
+        pbp_df['event'] = pbp_df['event'].map(event_types)
+
+        # Add Season
+        pbp_df.insert(
+            0,
+            'season',
+            pbp_df['date'].apply(
+                lambda x: str(int(x[0:4]) - int(x[5:] < '08-01')) +
+                str(int(x[0:4]) - int(x[5:] < '08-01') + 1)))
+
+        # Add Game ID
+        pbp_df['game_id'] = pbp_df['season'].apply(
+            lambda x: x[0:4]) + '0' + pbp_df['game_id'].astype(str)
+
+        # Insert Play_id
+        pbp_df.insert(
+            0,
+            'play_id',
+            pbp_df['game_id'].astype(str)+'_'+pbp_df['play_num'].astype(str))
+
+        print("\nPBP Saved To- " + 'nhl_pbp{}.csv'.format(file_name))
+
+        pbp_df.to_csv(
+            out_loc + 'nhl_pbp{}.csv'.format(file_name),
+            sep=',',
+            encoding='utf-8',
+            index=False)
+
     if shifts_df is not None:
-        print("Shift data deposited in file - " + 'nhl_shifts{}.csv'.format(file_name))
-        shifts_df.to_csv('nhl_shifts{}.csv'.format(file_name), sep=',', encoding='utf-8')
+        print("Shifts Saved To- " + 'nhl_shifts{}.csv'.format(file_name))
+        shifts_df.to_csv(
+            out_loc + 'nhl_shifts{}.csv'.format(file_name),
+            sep=',',
+            encoding='utf-8',
+            index=False)
 
 
 def scrape_list_of_games_par(games, if_scrape_shifts):
@@ -124,7 +188,6 @@ def scrape_list_of_games_par(games, if_scrape_shifts):
     pool.join()
     pbp_df = pd.concat([res[0] for res in results])
     shifts_df = pd.concat([res[1] for res in results])
-
     return pbp_df, shifts_df
 
 
@@ -142,6 +205,7 @@ def scrape_list_of_games(games, if_scrape_shifts=True):
 
     for game in games:
         pbp_df, shifts_df = game_scraper.scrape_game(str(game["game_id"]), game["date"], if_scrape_shifts)
+        pbp_df['game_type'] = str(game['game_type'])
         if pbp_df is not None:
             pbp_dfs.extend([pbp_df])
         if shifts_df is not None:
@@ -167,7 +231,7 @@ def scrape_list_of_games(games, if_scrape_shifts=True):
     return pbp_df, shifts_df
 
 
-def scrape_date_range(from_date, to_date, if_scrape_shifts, data_format='csv', preseason=False, rescrape=False, docs_dir=None):
+def scrape_date_range(from_date, to_date, out_loc, if_scrape_shifts = True, data_format='csv', preseason=False, rescrape=False, docs_dir=None):
     """
     Scrape games in given date range
 
@@ -192,16 +256,16 @@ def scrape_date_range(from_date, to_date, if_scrape_shifts, data_format='csv', p
     shared.if_rescrape(rescrape)
 
     games = json_schedule.scrape_schedule(from_date, to_date, preseason)
-    pbp_df, shifts_df = scrape_list_of_games(games, if_scrape_shifts)
+    pbp_df, shifts_df = scrape_list_of_games_par(games, if_scrape_shifts)
 
     if data_format.lower() == 'csv':
-        to_csv(from_date+'--'+to_date, pbp_df, shifts_df)
+        to_csv(from_date+'--'+to_date, pbp_df, shifts_df, out_loc)
     else:
         return {"pbp": pbp_df, "shifts": shifts_df, "errors": errors} if if_scrape_shifts else {"pbp": pbp_df,
                                                                                                 "errors": errors}
 
 
-def scrape_seasons(seasons, if_scrape_shifts, data_format='csv', preseason=False, rescrape=False, docs_dir=None):
+def scrape_seasons(seasons, out_loc, if_scrape_shifts=True, data_format='csv', preseason=False, rescrape=False, docs_dir=None):
     """
     Given list of seasons it scrapes all the seasons
 
@@ -234,7 +298,7 @@ def scrape_seasons(seasons, if_scrape_shifts, data_format='csv', preseason=False
         pbp_df, shifts_df = scrape_list_of_games_par(games, if_scrape_shifts)
 
         if data_format.lower() == 'csv':
-            to_csv(str(season)+str(season+1), pbp_df, shifts_df)
+            to_csv(str(season)+str(season+1), pbp_df, shifts_df,out_loc)
         else:
             master_pbps.append(pbp_df)
             master_shifts.append(shifts_df)
@@ -246,7 +310,7 @@ def scrape_seasons(seasons, if_scrape_shifts, data_format='csv', preseason=False
             return {"pbp": pd.concat(master_pbps), "errors": errors}
 
 
-def scrape_games(games, if_scrape_shifts, data_format='csv', rescrape=False, docs_dir=None):
+def scrape_games(games, if_scrape_shifts=True, data_format='csv', rescrape=False, docs_dir=None):
     """
     Scrape a list of games
 
@@ -270,10 +334,10 @@ def scrape_games(games, if_scrape_shifts, data_format='csv', rescrape=False, doc
     games_list = json_schedule.get_dates(games)
 
     # Scrape pbp and shifts
-    pbp_df, shifts_df = scrape_list_of_games(games_list, if_scrape_shifts)
+    pbp_df, shifts_df = scrape_list_of_games_par(games_list, if_scrape_shifts)
 
     if data_format.lower() == 'csv':
-        to_csv(str(random.randint(1, 101)), pbp_df, shifts_df)
+        to_csv(str(random.randint(1, 101)), pbp_df, shifts_df, out_loc)
     else:
         return {"pbp": pbp_df, "shifts": shifts_df, "errors": errors} if if_scrape_shifts else {"pbp": pbp_df,
                                                                                                 "errors": errors}

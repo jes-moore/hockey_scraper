@@ -151,7 +151,7 @@ def fix_name(name):
 
 def get_team(team):
     """
-    Get the fucking team
+    Get the  team
     """
     return TEAMS.get(team, team).upper()
 

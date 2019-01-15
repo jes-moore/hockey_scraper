@@ -12,9 +12,9 @@ def get_pbp(game_id):
     """
     Given a game_id it returns the raw json
     Ex: http://statsapi.web.nhl.com/api/v1/game/2016020475/feed/live
-    
+
     :param game_id: string - the game
-    
+
     :return: raw json of game or None if couldn't get game
     """
     page_info = {
@@ -34,7 +34,7 @@ def get_pbp(game_id):
 
 def get_teams(pbp_json):
     """
-    Get teams 
+    Get teams
 
     :param pbp_json: raw play by play json
 
@@ -46,10 +46,10 @@ def get_teams(pbp_json):
 
 def change_event_name(event):
     """
-    Change event names from json style to html (ex: BLOCKED_SHOT to BLOCK). 
-    
+    Change event names from json style to html (ex: BLOCKED_SHOT to BLOCK).
+
     :param event: event type
-    
+
     :return: fixed event type
     """
     event_types = {
@@ -79,9 +79,9 @@ def change_event_name(event):
 def parse_event(event):
     """
     Parses a single event when the info is in a json format
-    
-    :param event: json of event 
-    
+
+    :param event: json of event
+
     :return: dictionary with the info
     """
     play = dict()
@@ -115,11 +115,11 @@ def parse_event(event):
 def parse_json(game_json, game_id):
     """
     Scrape the json for a game
-    
+
     :param game_json: raw json
     :param game_id: game id for game
-    
-    :return: Either a DataFrame with info for the game 
+
+    :return: Either a DataFrame with info for the game
     """
     columns = ['period', 'event', 'seconds_elapsed', 'p1_name', 'p1_ID', 'p2_name', 'p2_ID', 'p3_name', 'p3_ID', 'xC', 'yC']
 
@@ -143,9 +143,9 @@ def parse_json(game_json, game_id):
 def scrape_game(game_id):
     """
     Used for debugging. HTML depends on json so can't follow this structure
-    
+
     :param game_id: game to scrape
-    
+
     :return: DataFrame of game info
     """
     game_json = get_pbp(game_id)
