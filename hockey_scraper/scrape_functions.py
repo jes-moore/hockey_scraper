@@ -205,7 +205,10 @@ def scrape_list_of_games(games, if_scrape_shifts=True):
 
     for game in games:
         pbp_df, shifts_df = game_scraper.scrape_game(str(game["game_id"]), game["date"], if_scrape_shifts)
-        pbp_df['game_type'] = str(game['game_type'])
+        try:
+            pbp_df['game_type'] = str(game['game_type'])
+        except Exception:
+            pass
         if pbp_df is not None:
             pbp_dfs.extend([pbp_df])
         if shifts_df is not None:
@@ -214,6 +217,9 @@ def scrape_list_of_games(games, if_scrape_shifts=True):
     # Check if any games...if not let's get out of here
     if len(pbp_dfs) == 0:
         return None, None
+    if len(shifts_dfs) == 0:
+        return None, None
+
     else:
         pbp_df = pd.concat(pbp_dfs)
         pbp_df = pbp_df.reset_index(drop=True)
@@ -295,6 +301,7 @@ def scrape_seasons(seasons, out_loc, if_scrape_shifts=True, data_format='csv', p
         to_date = '-'.join([str(season + 1), '7', '1'])
 
         games = json_schedule.scrape_schedule(from_date, to_date, preseason)
+        # games = games[-3:] # Debugging Only
         pbp_df, shifts_df = scrape_list_of_games_par(games, if_scrape_shifts)
 
         if data_format.lower() == 'csv':

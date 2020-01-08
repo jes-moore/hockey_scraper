@@ -12,15 +12,16 @@ def get_shifts(game_id):
     """
     Given a game_id it returns a the shifts for both teams
     Ex: http://www.nhl.com/scores/htmlreports/20162017/TV020971.HTM
-    
+
     :param game_id: the game
-    
+
     :return: Shifts or None
     """
     game_id = str(game_id)
     home_url = 'http://www.nhl.com/scores/htmlreports/{}{}/TH{}.HTM'.format(game_id[:4], int(game_id[:4])+1, game_id[4:])
+    # print(home_url)
     away_url = 'http://www.nhl.com/scores/htmlreports/{}{}/TV{}.HTM'.format(game_id[:4], int(game_id[:4])+1, game_id[4:])
-
+    # print(away_url)
     page_info = {
         "url": home_url,
         "name": game_id,
@@ -35,7 +36,7 @@ def get_shifts(game_id):
     page_info["type"] = "html_shifts_away"
     page_info["url"] = away_url
     away = shared.get_file(page_info)
-
+    # print(away)
     return home, away
 
 
@@ -43,9 +44,9 @@ def get_soup(shifts_html):
     """
     Uses Beautiful soup to parses the html document.
     Some parsers work for some pages but don't work for others....I'm not sure why so I just try them all here in order
-    
+
     :param shifts_html: html doc
-    
+
     :return: "soupified" html and player_shifts portion of html (it's a bunch of td tags)
     """
     soup = BeautifulSoup(shifts_html, "lxml")
@@ -65,9 +66,9 @@ def get_soup(shifts_html):
 def get_teams(soup):
     """
     Return the team for the TOI tables and the home team
-    
+
     :param soup: souped up html
-    
+
     :return: list with team and home team
     """
     team = soup.find('td', class_='teamHeading + border')  # Team for shifts
@@ -91,7 +92,7 @@ def analyze_shifts(shift, name, team, home_team, player_ids):
     :param team: given team
     :param home_team: home team for given game
     :param player_ids: dict with info on players
-    
+
     :return: dict with info for shift
     """
     shifts = dict()
@@ -124,13 +125,13 @@ def analyze_shifts(shift, name, team, home_team, player_ids):
 def parse_html(html, player_ids, game_id):
     """
     Parse the html
-    
-    Note: Don't fuck with this!!! I'm not exactly sure how or why but it works. 
-    
+
+    Note: Don't fuck with this!!! I'm not exactly sure how or why but it works.
+
     :param html: cleaned up html
     :param player_ids: dict of home and away players
     :param game_id: id for game
-    
+
     :return: DataFrame with info
     """
     columns = ['Game_Id', 'Player', 'Player_Id', 'Period', 'Team', 'Start', 'End', 'Duration']
@@ -173,11 +174,11 @@ def parse_html(html, player_ids, game_id):
 
 def scrape_game(game_id, players):
     """
-    Scrape the game. 
-    
+    Scrape the game.
+
     :param game_id: id for game
     :param players: list of players
-    
+
     :return: DataFrame with info for the game
     """
     columns = ['Game_Id', 'Period', 'Team', 'Player', 'Player_Id', 'Start', 'End', 'Duration']

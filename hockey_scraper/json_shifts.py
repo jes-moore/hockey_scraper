@@ -11,9 +11,9 @@ def get_shifts(game_id):
     """
     Given a game_id it returns the raw json
     Ex: http://www.nhl.com/stats/rest/shiftcharts?cayenneExp=gameId=2010020001
-    
+
     :param game_id: the game
-    
+
     :return: json or None
     """
     page_info = {
@@ -35,9 +35,9 @@ def get_shifts(game_id):
 def fix_team_tricode(tricode):
     """
     Some of the tricodes are different than how I want them
-    
+
     :param tricode: 3 letter team name - ex: NYR
-    
+
     :return: fixed tricode
     """
     fixed_tricodes = {
@@ -56,9 +56,9 @@ def fix_team_tricode(tricode):
 def parse_shift(shift):
     """
     Parse shift for json
-    
+
     :param shift: json for shift
-    
+
     :return: dict with shift info
     """
     shift_dict = dict()
@@ -77,17 +77,17 @@ def parse_shift(shift):
         shift_dict['Duration'] = shared.convert_to_seconds(shift['duration'])
     else:
         shift_dict = dict()
-
+    # print(shift_dict)
     return shift_dict
 
 
 def parse_json(shift_json, game_id):
     """
     Parse the json
-    
+
     :param shift_json: raw json
     :param game_id: if of game
-    
+
     :return: DataFrame with info
     """
     columns = ['Game_Id', 'Period', 'Team', 'Player', 'Player_Id', 'Start', 'End', 'Duration']
@@ -105,10 +105,10 @@ def parse_json(shift_json, game_id):
 
 def scrape_game(game_id):
     """
-    Scrape the game. 
-    
+    Scrape the game.
+
     :param game_id: game
-    
+
     :return: DataFrame with info for the game
     """
     shifts_json = get_shifts(game_id)
